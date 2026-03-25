@@ -11,6 +11,7 @@ namespace iPadConnect {
     //% weight=100
     export function init() {
         bluetooth.startUartService();
+        basic.showIcon(IconNames.Heart);
 
         bluetooth.onBluetoothConnected(function () {
             isConnected = true;
