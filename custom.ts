@@ -25,6 +25,8 @@ enum TargetCategory {
 namespace iPadConnect {
     let latestX = 0;
     let latestY = 0;
+    let latestW = 0;
+    let latestH = 0;
     let isConnected = false;
 
     function getCategoryString(category: TargetCategory): string {
@@ -65,13 +67,26 @@ namespace iPadConnect {
         bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             let receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine));
 
-            // 檢查是否包含逗號 (處理座標格式 X,Y)
+            // 檢查是否包含逗號 (處理座標格式 X,Y,W,H 或 X,Y)
             let commaIndex = receivedString.indexOf(",");
             if (commaIndex > 0) {
-                let xStr = receivedString.substr(0, commaIndex);
-                let yStr = receivedString.substr(commaIndex + 1);
-                latestX = parseFloat(xStr);
-                latestY = parseFloat(yStr);
+                let p1 = receivedString.indexOf(",");
+                let p2 = receivedString.indexOf(",", p1 + 1);
+                let p3 = receivedString.indexOf(",", p2 + 1);
+
+                if (p2 > 0 && p3 > 0) {
+                    // X,Y,W,H
+                    latestX = parseFloat(receivedString.substr(0, p1));
+                    latestY = parseFloat(receivedString.substr(p1 + 1, p2 - p1 - 1));
+                    latestW = parseFloat(receivedString.substr(p2 + 1, p3 - p2 - 1));
+                    latestH = parseFloat(receivedString.substr(p3 + 1));
+                } else if (p1 > 0) {
+                    // 舊版只有 X,Y
+                    latestX = parseFloat(receivedString.substr(0, p1));
+                    latestY = parseFloat(receivedString.substr(p1 + 1));
+                    latestW = 0;
+                    latestH = 0;
+                }
 
                 // 觸發自訂的座標事件
                 control.raiseEvent(31415, 1);
@@ -118,7 +133,7 @@ namespace iPadConnect {
     /**
      * 取得最新收到的 X 座標
      */
-    //% blockId=ipad_get_x block="取得最新 X 座標"
+    //% blockId=ipad_get_x block="取得最新 X 座標 (0~1)"
     //% weight=70
     export function getX(): number {
         return latestX;
@@ -127,10 +142,28 @@ namespace iPadConnect {
     /**
      * 取得最新收到的 Y 座標
      */
-    //% blockId=ipad_get_y block="取得最新 Y 座標"
+    //% blockId=ipad_get_y block="取得最新 Y 座標 (0~1)"
     //% weight=60
     export function getY(): number {
         return latestY;
+    }
+
+    /**
+     * 取得最新收到的物件寬度 (Width)
+     */
+    //% blockId=ipad_get_w block="取得最新寬度 (0~1)"
+    //% weight=58
+    export function getW(): number {
+        return latestW;
+    }
+
+    /**
+     * 取得最新收到的物件高度 (Height)
+     */
+    //% blockId=ipad_get_h block="取得最新高度 (0~1)"
+    //% weight=57
+    export function getH(): number {
+        return latestH;
     }
 
     /**
