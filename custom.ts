@@ -1,8 +1,47 @@
+enum TargetCategory {
+    //% block="任何物件"
+    All = 0,
+    //% block="人 (person)"
+    Person = 1,
+    //% block="貓 (cat)"
+    Cat = 2,
+    //% block="狗 (dog)"
+    Dog = 3,
+    //% block="車子 (car)"
+    Car = 4,
+    //% block="蘋果 (apple)"
+    Apple = 5,
+    //% block="杯子 (cup)"
+    Cup = 6,
+    //% block="瓶子 (bottle)"
+    Bottle = 7,
+    //% block="椅子 (chair)"
+    Chair = 8,
+    //% block="手機 (cell phone)"
+    CellPhone = 9
+}
+
 //% weight=100 color=#0fbc11 icon="" block="iPad 控制"
 namespace iPadConnect {
     let latestX = 0;
     let latestY = 0;
     let isConnected = false;
+
+    function getCategoryString(category: TargetCategory): string {
+        switch (category) {
+            case TargetCategory.All: return "all";
+            case TargetCategory.Person: return "person";
+            case TargetCategory.Cat: return "cat";
+            case TargetCategory.Dog: return "dog";
+            case TargetCategory.Car: return "car";
+            case TargetCategory.Apple: return "apple";
+            case TargetCategory.Cup: return "cup";
+            case TargetCategory.Bottle: return "bottle";
+            case TargetCategory.Chair: return "chair";
+            case TargetCategory.CellPhone: return "cell phone";
+            default: return "all";
+        }
+    }
 
     /**
      * 初始化 iPad 藍牙連線 (必須放在「當啟動時」)
@@ -11,7 +50,6 @@ namespace iPadConnect {
     //% weight=100
     export function init() {
         bluetooth.startUartService();
-        basic.showIcon(IconNames.Heart);
 
         bluetooth.onBluetoothConnected(function () {
             isConnected = true;
@@ -55,6 +93,17 @@ namespace iPadConnect {
     //% weight=90
     export function onDataReceived(body: () => void): void {
         control.onEvent(31415, 1, body);
+    }
+
+    /**
+     * 設定 iPad 上的 AI 追蹤目標
+     * @param category 欲追蹤的目標類別
+     */
+    //% blockId=ipad_set_target block="設定追蹤目標為 %category"
+    //% weight=85
+    export function setTrackingTarget(category: TargetCategory) {
+        let catStr = getCategoryString(category);
+        sendToiPad("TARGET:" + catStr);
     }
 
     /**
