@@ -69,22 +69,46 @@ namespace iPadConnect {
             // 檢查是否包含逗號 (處理座標格式 X,Y,W,H 或 X,Y)
             let commaIndex = receivedString.indexOf(",");
             if (commaIndex > 0) {
-                let p1 = receivedString.indexOf(",");
-                let p2 = receivedString.indexOf(",", p1 + 1);
-                let p3 = receivedString.indexOf(",", p2 + 1);
+                // 處理多物件格式: "ID,X,Y,W,H;ID,X,Y,W,H" 或 "ID,X,Y;ID,X,Y"
+                let objects = receivedString.split(";");
 
-                if (p2 > 0 && p3 > 0) {
-                    // X,Y,W,H
-                    latestX = parseFloat(receivedString.substr(0, p1));
-                    latestY = parseFloat(receivedString.substr(p1 + 1, p2 - p1 - 1));
-                    latestW = parseFloat(receivedString.substr(p2 + 1, p3 - p2 - 1));
-                    latestH = parseFloat(receivedString.substr(p3 + 1));
-                } else if (p1 > 0) {
-                    // 舊版只有 X,Y
-                    latestX = parseFloat(receivedString.substr(0, p1));
-                    latestY = parseFloat(receivedString.substr(p1 + 1));
-                    latestW = 0;
-                    latestH = 0;
+                // 清空舊的陣列
+                detectedObjects = [];
+
+                for (let i = 0; i < objects.length; i++) {
+                    let objData = objects[i].split(",");
+                    if (objData.length >= 5) {
+                        // XYWH 模式: ID, X, Y, W, H
+                        detectedObjects.push({
+                            id: parseInt(objData[0]),
+                            x: parseFloat(objData[1]),
+                            y: parseFloat(objData[2]),
+                            w: parseFloat(objData[3]),
+                            h: parseFloat(objData[4])
+                        });
+                    } else if (objData.length >= 3) {
+                        // XY 模式: ID, X, Y
+                        detectedObjects.push({
+                            id: parseInt(objData[0]),
+                            x: parseFloat(objData[1]),
+                            y: parseFloat(objData[2]),
+                            w: 0,
+                            h: 0
+                        });
+                    }
+                }
+
+                if (detectedObjects.length > 0) {
+                    // 為了相容舊版，把第一個物件的資料存入 latest 變數
+                    latestX = detectedObjects[0].x;
+                    latestY = detectedObjects[0].y;
+                    latestW = detectedObjects[0].w;
+                    latestH = detectedObjects[0].h;
+                } else {
+                    latestX = -1;
+                    latestY = -1;
+                    latestW = -1;
+                    latestH = -1;
                 }
 
                 // 觸發自訂的座標事件
@@ -99,6 +123,100 @@ namespace iPadConnect {
     }
 
     let latestCommand = "";
+
+    // 儲存多個偵測物件的陣列
+    interface DetectedObject {
+        id: number;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+    }
+    let detectedObjects: DetectedObject[] = [];
+
+    /**
+     * 取得偵測到的物件數量
+     */
+    //% blockId=ipad_get_object_count block="取得偵測到的物件數量"
+    //% weight=75
+    export function getObjectCount(): number {
+        return detectedObjects.length;
+    }
+
+    /**
+     * 取得指定物件的 X 座標 (索引從 0 開始)
+     * @param index 物件索引
+     */
+    //% blockId=ipad_get_object_x block="取得第 %index 個物件的 X 座標"
+    //% weight=74
+    export function getObjectX(index: number): number {
+        if (index >= 0 && index < detectedObjects.length) {
+            return detectedObjects[index].x;
+        }
+        return -1;
+    }
+
+    /**
+     * 取得指定物件的 Y 座標 (索引從 0 開始)
+     * @param index 物件索引
+     */
+    //% blockId=ipad_get_object_y block="取得第 %index 個物件的 Y 座標"
+    //% weight=73
+    export function getObjectY(index: number): number {
+        if (index >= 0 && index < detectedObjects.length) {
+            return detectedObjects[index].y;
+        }
+        return -1;
+    }
+
+    /**
+     * 取得指定物件的寬度 (索引從 0 開始)
+     * @param index 物件索引
+     */
+    //% blockId=ipad_get_object_w block="取得第 %index 個物件的寬度"
+    //% weight=72
+    export function getObjectW(index: number): number {
+        if (index >= 0 && index < detectedObjects.length) {
+            return detectedObjects[index].w;
+        }
+        return -1;
+    }
+
+    /**
+     * 取得指定物件的高度 (索引從 0 開始)
+     * @param index 物件索引
+     */
+    //% blockId=ipad_get_object_h block="取得第 %index 個物件的高度"
+    //% weight=71
+    export function getObjectH(index: number): number {
+        if (index >= 0 && index < detectedObjects.length) {
+            return detectedObjects[index].h;
+        }
+        return -1;
+    }
+
+    /**
+     * 取得指定物件的類別 ID (索引從 0 開始)
+     * @param index 物件索引
+     */
+    //% blockId=ipad_get_object_id block="取得第 %index 個物件的類別 ID"
+    //% weight=70
+    export function getObjectId(index: number): number {
+        if (index >= 0 && index < detectedObjects.length) {
+            return detectedObjects[index].id;
+        }
+        return -1;
+    }
+
+    /**
+     * 切換傳輸模式 (XYWH 或 僅 XY)
+     * @param mode 模式 (例如 "XYWH" 或 "XY")
+     */
+    //% blockId=ipad_set_transmit_mode block="設定傳輸模式為 %mode"
+    //% weight=83
+    export function setTransmitMode(mode: string) {
+        sendToiPad("MODE:" + mode);
+    }
 
     /**
      * 當收到 iPad 傳來的座標資料時執行
@@ -121,7 +239,7 @@ namespace iPadConnect {
     }
 
     /**
-     * 設定 iPad 上的 AI 追蹤目標 (自行輸入 ID)
+     * 設定 iPad 上的 AI 追蹤目標 (自行輸入 ID 數字)
      * @param id 目標的編號 (請參考 iPad 網頁上的清單)
      */
     //% blockId=ipad_set_target_by_id block="設定追蹤目標為 ID %id"
