@@ -184,4 +184,80 @@ namespace iPadConnect {
     export function sendToiPad(msg: string) {
         bluetooth.uartWriteString(msg + "\n");
     }
+
+    // ==========================================
+    // 機器手臂輔助控制區 (平滑馬達與測試)
+    // ==========================================
+
+    let targetS1S2 = 90;
+    let targetS3 = 90;
+    let targetS4 = 90;
+
+    let currentS1S2 = 90;
+    let currentS3 = 90;
+    let currentS4 = 90;
+
+    let armUpdateInterval = 50; // 每 50ms 更新一次馬達角度
+    let armStepSize = 2; // 每次最多移動 2 度，確保平滑不損壞馬達
+
+    /**
+     * 初始化並啟動平滑機器手臂控制背景任務
+     * 必須放在啟動區
+     */
+    //% blockId=arm_init_smooth block="啟動平滑機器手臂控制"
+    //% weight=45
+    export function initSmoothArm() {
+        control.inBackground(function () {
+            while (true) {
+                // S4: 底座左右
+                if (currentS4 < targetS4) currentS4 = Math.min(currentS4 + armStepSize, targetS4);
+                if (currentS4 > targetS4) currentS4 = Math.max(currentS4 - armStepSize, targetS4);
+                pins.servoWritePin(AnalogPin.P4, currentS4);
+
+                // S1, S2: 手臂上下 (假設 S1 接 P1, S2 接 P2，且方向相同)
+                if (currentS1S2 < targetS1S2) currentS1S2 = Math.min(currentS1S2 + armStepSize, targetS1S2);
+                if (currentS1S2 > targetS1S2) currentS1S2 = Math.max(currentS1S2 - armStepSize, targetS1S2);
+                pins.servoWritePin(AnalogPin.P1, currentS1S2);
+                pins.servoWritePin(AnalogPin.P2, currentS1S2);
+
+                // S3: 夾爪 (假設 S3 接 P3)
+                if (currentS3 < targetS3) currentS3 = Math.min(currentS3 + armStepSize, targetS3);
+                if (currentS3 > targetS3) currentS3 = Math.max(currentS3 - armStepSize, targetS3);
+                pins.servoWritePin(AnalogPin.P3, currentS3);
+
+                basic.pause(armUpdateInterval);
+            }
+        });
+    }
+
+    /**
+     * 設定 S4 底座(左右) 目標角度，馬達會平滑轉動過去
+     */
+    //% blockId=arm_set_s4 block="設定 S4 底座角度為 %angle 度"
+    //% angle.min=0 angle.max=180
+    //% weight=44
+    export function setS4Target(angle: number) {
+        targetS4 = Math.clamp(0, 180, angle);
+    }
+
+    /**
+     * 設定 S1, S2 手臂(上下) 目標角度，馬達會平滑轉動過去
+     */
+    //% blockId=arm_set_s1s2 block="設定 S1&S2 手臂角度為 %angle 度"
+    //% angle.min=0 angle.max=180
+    //% weight=43
+    export function setS1S2Target(angle: number) {
+        targetS1S2 = Math.clamp(0, 180, angle);
+    }
+
+    /**
+     * 設定 S3 夾爪 目標角度，馬達會平滑轉動過去
+     */
+    //% blockId=arm_set_s3 block="設定 S3 夾爪角度為 %angle 度"
+    //% angle.min=0 angle.max=180
+    //% weight=42
+    export function setS3Target(angle: number) {
+        targetS3 = Math.clamp(0, 180, angle);
+    }
+
 }
