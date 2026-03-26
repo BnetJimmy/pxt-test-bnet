@@ -1,24 +1,24 @@
 enum TargetCategory {
     //% block="任何物件"
-    All = 0,
+    All = -1,
     //% block="人 (person)"
-    Person = 1,
+    Person = 0,
     //% block="貓 (cat)"
-    Cat = 2,
+    Cat = 15,
     //% block="狗 (dog)"
-    Dog = 3,
+    Dog = 16,
     //% block="車子 (car)"
-    Car = 4,
+    Car = 2,
     //% block="蘋果 (apple)"
-    Apple = 5,
+    Apple = 47,
     //% block="杯子 (cup)"
-    Cup = 6,
+    Cup = 41,
     //% block="瓶子 (bottle)"
-    Bottle = 7,
+    Bottle = 39,
     //% block="椅子 (chair)"
-    Chair = 8,
+    Chair = 56,
     //% block="手機 (cell phone)"
-    CellPhone = 9
+    CellPhone = 67
 }
 
 //% weight=100 color=#0fbc11 icon="" block="iPad 控制"
@@ -32,16 +32,11 @@ namespace iPadConnect {
     function getCategoryString(category: TargetCategory): string {
         switch (category) {
             case TargetCategory.All: return "all";
-            case TargetCategory.Person: return "person";
-            case TargetCategory.Cat: return "cat";
-            case TargetCategory.Dog: return "dog";
-            case TargetCategory.Car: return "car";
-            case TargetCategory.Apple: return "apple";
-            case TargetCategory.Cup: return "cup";
-            case TargetCategory.Bottle: return "bottle";
-            case TargetCategory.Chair: return "chair";
-            case TargetCategory.CellPhone: return "cell phone";
-            default: return "all";
+            default:
+                // 將 Enum 的數值直接轉成字串傳送 (例如傳送 "0", "1", "47")
+                // 注意：在 TargetCategory 中，Apple 目前被設定為 5。
+                // 如果要對應 YOLOv8 原生 Index，可能需要修改 enum 對應的數值。
+                return category.toString();
         }
     }
 
@@ -137,7 +132,7 @@ namespace iPadConnect {
     /**
      * 取得最新收到的 X 座標
      */
-    //% blockId=ipad_get_x block="取得最新 X 座標 (0~1)"
+    //% blockId=ipad_get_x block="取得最新 X 座標 (0~100%)"
     //% weight=70
     export function getX(): number {
         return latestX;
@@ -146,7 +141,7 @@ namespace iPadConnect {
     /**
      * 取得最新收到的 Y 座標
      */
-    //% blockId=ipad_get_y block="取得最新 Y 座標 (0~1)"
+    //% blockId=ipad_get_y block="取得最新 Y 座標 (0~100%)"
     //% weight=60
     export function getY(): number {
         return latestY;
@@ -155,7 +150,7 @@ namespace iPadConnect {
     /**
      * 取得最新收到的物件寬度 (Width)
      */
-    //% blockId=ipad_get_w block="取得最新寬度 (0~1)"
+    //% blockId=ipad_get_w block="取得最新寬度 (0~100%)"
     //% weight=58
     export function getW(): number {
         return latestW;
@@ -164,7 +159,7 @@ namespace iPadConnect {
     /**
      * 取得最新收到的物件高度 (Height)
      */
-    //% blockId=ipad_get_h block="取得最新高度 (0~1)"
+    //% blockId=ipad_get_h block="取得最新高度 (0~100%)"
     //% weight=57
     export function getH(): number {
         return latestH;
