@@ -110,7 +110,7 @@ namespace iPadConnect {
     }
 
     /**
-     * 設定 iPad 上的 AI 追蹤目標
+     * 設定 iPad 上的 AI 追蹤目標 (由內建清單選擇)
      * @param category 欲追蹤的目標類別
      */
     //% blockId=ipad_set_target block="設定追蹤目標為 %category"
@@ -118,6 +118,16 @@ namespace iPadConnect {
     export function setTrackingTarget(category: TargetCategory) {
         let catStr = getCategoryString(category);
         sendToiPad("TARGET:" + catStr);
+    }
+
+    /**
+     * 設定 iPad 上的 AI 追蹤目標 (自行輸入 ID)
+     * @param id 目標的編號 (請參考 iPad 網頁上的清單)
+     */
+    //% blockId=ipad_set_target_by_id block="設定追蹤目標為 ID %id"
+    //% weight=84
+    export function setTrackingTargetById(id: number) {
+        sendToiPad("TARGET:" + id);
     }
 
     /**
