@@ -65,7 +65,7 @@ namespace iPadConnect {
 
         // 隱藏藍牙接收的複雜度，並防止學生在這裡放 pause()
         bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            let receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine));
+            let receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine)).trim();
 
             // 檢查是否包含逗號 (處理座標格式 X,Y,W,H 或 X,Y)
             let commaIndex = receivedString.indexOf(",");
