@@ -208,6 +208,68 @@ namespace iPadConnect {
         return -1;
     }
 
+    /** 陣列中第一個 id 符合的索引；找不到為 -1（iPad 已依分數排序時通常即最高分） */
+    function indexOfFirstObjectWithId(targetId: number): number {
+        for (let i = 0; i < detectedObjects.length; i++) {
+            if (detectedObjects[i].id == targetId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 依類別 ID 取得第一個符合物件的 X 座標 (0~100%；找不到回傳 -1)
+     */
+    //% blockId=ipad_get_object_x_by_target_id block="依類別 ID %targetId 取得 X 座標"
+    //% weight=69
+    export function getObjectXByTargetId(targetId: number): number {
+        let idx = indexOfFirstObjectWithId(targetId);
+        if (idx >= 0) {
+            return detectedObjects[idx].x;
+        }
+        return -1;
+    }
+
+    /**
+     * 依類別 ID 取得第一個符合物件的 Y 座標 (0~100%；找不到回傳 -1)
+     */
+    //% blockId=ipad_get_object_y_by_target_id block="依類別 ID %targetId 取得 Y 座標"
+    //% weight=68
+    export function getObjectYByTargetId(targetId: number): number {
+        let idx = indexOfFirstObjectWithId(targetId);
+        if (idx >= 0) {
+            return detectedObjects[idx].y;
+        }
+        return -1;
+    }
+
+    /**
+     * 依類別 ID 取得第一個符合物件的寬度 (0~100%；找不到回傳 -1)
+     */
+    //% blockId=ipad_get_object_w_by_target_id block="依類別 ID %targetId 取得寬度"
+    //% weight=67
+    export function getObjectWByTargetId(targetId: number): number {
+        let idx = indexOfFirstObjectWithId(targetId);
+        if (idx >= 0) {
+            return detectedObjects[idx].w;
+        }
+        return -1;
+    }
+
+    /**
+     * 依類別 ID 取得第一個符合物件的高度 (0~100%；找不到回傳 -1)
+     */
+    //% blockId=ipad_get_object_h_by_target_id block="依類別 ID %targetId 取得高度"
+    //% weight=66
+    export function getObjectHByTargetId(targetId: number): number {
+        let idx = indexOfFirstObjectWithId(targetId);
+        if (idx >= 0) {
+            return detectedObjects[idx].h;
+        }
+        return -1;
+    }
+
     /**
      * 切換傳輸模式 (XYWH 或 僅 XY)
      * @param mode 模式 (例如 "XYWH" 或 "XY")
